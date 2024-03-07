@@ -25,28 +25,25 @@ with ic1:
     PL=st.number_input("**Plastic limit [%]:**",min_value=2.0,max_value=25.0,step=1.0,value=20.21)
 with ic2:
     PI=st.number_input("**Plasticity index [%]:**", min_value=15.0, max_value=55.0, step=5.0, value=34.32)
-    LI=st.number_input("**Liquidity index [%]:**", min_value=0.0, max_value=7.0, step=0.1, value=1.2)
+    LI=st.number_input("**Liquidity index [%]:**", min_value=0.0, max_value=7.0, step=0.01, value=0.0)
 
 new_sample=np.array([[W, LL, PL, PI, LI]],dtype=object)
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
-x_train=scaler.fit_transform(x_train)
-x_test=scaler.transform(x_test)
-print(x_train.shape, x_test.shape, y_train.shape, y_test.shape)
+x=scaler.fit_transform(x)
 lgbm_settings={'n_estimators': 14, 'num_leaves': 240, 'min_child_samples': 6, 
                'learning_rate': 0.40900945122677634, 'log_max_bin': 10, 
                'colsample_bytree': 0.7726323753260981, 'reg_alpha': 0.021112250160766365, 
                'reg_lambda': 0.0014243465097419357, "verbose":-1}
 model=LGBMRegressor(**lgbm_settings)
-model.fit(x_train,y_train)
+model.fit(x,y)
 train_color="teal";test_color="fuchsia";eqn="-0.076+x"
 timeStart = time()
-yhat_test = model.predict(x_test)
-yhat_train = model.predict(x_train)
 timeEnd=time()
 
 fig, ax=plt.subplots()
 with ic2:
-    st.write(f"**Shear strength = **{model.predict(new_sample)[0]:.2f}** MPa**")
+    #st.write(f"W={new_sample[0][0]}, LL={new_sample[0][1]}, PL={new_sample[0][2]}, PI={new_sample[0][3]}, LI={new_sample[0][4]}")
+    st.write(f"**Shear strength = **{model.predict(new_sample)[0]:.3f}** MPa**")
+    
 #with oc:
 #    st.write(f"**Shear strength = **{model.predict(new_sample)[0]:.2f}** MPa**")
 #ax.scatter(yhat_train, y_train, color='teal', label=r'$\mathbf{LightGBM\text{ }train}$')
@@ -70,9 +67,9 @@ with ic2:
 def linearRegr(x,a0,a1):
     return a0+a1 * np.array(x)
 
-coeffs, covmat=curve_fit(f=linearRegr, xdata=np.concatenate((yhat_train,yhat_test)).flatten(),ydata=np.concatenate((y_train,y_test)).flatten())
-print(f"a0={coeffs[0]}, a1={coeffs[1]}")
+#coeffs, covmat=curve_fit(f=linearRegr, xdata=np.concatenate((yhat_train,yhat_test)).flatten(),ydata=np.concatenate((y_train,y_test)).flatten())
+#print(f"a0={coeffs[0]}, a1={coeffs[1]}")
 #regr=linearRegr(xk,coeffs[0], coeffs[1])
 #ax.plot(xk,regr, label=r"$\mathbf{y=0.125+0.999x}$")
-plt.legend(loc='upper left',fontsize=12)
+#plt.legend(loc='upper left',fontsize=12)
 #plt.show()
